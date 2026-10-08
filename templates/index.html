@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Legal GraphRAG Assistant</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+</head>
+<body>
+  <div class="app-shell app-shell-pro">
+    <aside class="left-sidebar">
+      <div class="brand-block">
+        <div class="brand-badge">⚖</div>
+        <div>
+          <h1>Legal GraphRAG</h1>
+          <p class="muted">AI tra cứu pháp luật</p>
+        </div>
+      </div>
+
+      <button class="new-chat-btn" id="newChatBtn" type="button">
+        + Cuộc trò chuyện mới
+      </button>
+
+      <div class="sidebar-section">
+        <div class="section-title">Lịch sử hỏi đáp</div>
+
+        <div id="historyList" class="history-list">
+          <div class="history-item-wrapper">
+            <button class="history-item active" type="button">
+              Phiên hiện tại
+            </button>
+            <button class="history-delete-btn" type="button" title="Xoá cuộc trò chuyện">
+              ×
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="section-title">Gợi ý nhanh</div>
+        <div class="quick-prompts">
+          <button class="quick-prompt" type="button">Thuế suất thu nhập cá nhân hiện nay?</button>
+          <button class="quick-prompt" type="button">Điều kiện kết hôn theo pháp luật?</button>
+          <button class="quick-prompt" type="button">Vượt đèn đỏ bị phạt bao nhiêu tiền?</button>
+          <button class="quick-prompt" type="button">Quyền sử dụng đất là gì?</button>
+        </div>
+      </div>
+    </aside>
+
+    <main class="chat-main">
+      <header class="chat-topbar">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <button class="mobile-menu-btn" onclick="document.querySelector('.left-sidebar').classList.toggle('show-mobile')" type="button">☰</button>
+          <h2>Trợ lý AI pháp lý</h2>
+        </div>
+        <div class="topbar-badge">GraphRAG</div>
+      </header>
+
+      <section id="chatBox" class="chat-box chat-box-pro">
+        <div class="welcome-card">
+          <div class="welcome-icon">⚖</div>
+          <h3>Xin chào! Tôi là trợ lý pháp lý AI</h3>
+          <p>
+            Hỏi tôi về điều luật, chế tài, điều kiện áp dụng hoặc tra cứu 
+            căn cứ pháp lý từ các văn bản đã nạp vào hệ thống.
+          </p>
+        </div>
+      </section>
+
+      <form id="chatForm" class="chat-form chat-form-pro">
+        <div class="input-shell">
+          <textarea
+            id="questionInput"
+            placeholder="Nhập câu hỏi pháp lý..."
+            rows="1"
+          ></textarea>
+          <button type="submit" class="send-btn">Gửi</button>
+        </div>
+      </form>
+    </main>
+
+    <aside class="right-sidebar">
+      <div class="debug-toggle-card">
+        <div class="debug-toggle-header">
+          <div>
+            <div class="debug-toggle-title">Chế độ kiểm tra</div>
+            <div class="debug-toggle-subtitle">
+              Hiện / ẩn trạng thái, graph và chi tiết node
+            </div>
+          </div>
+
+          <label class="switch">
+            <input type="checkbox" id="debugPanelToggle" />
+            <span class="switch-slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="side-card">
+        <h3>1. Tài liệu PDF</h3>
+
+        <div id="uploadZone" class="upload-zone">
+          <div class="upload-icon">📂</div>
+          <div class="upload-text">Kéo thả PDF vào đây</div>
+          <div class="upload-sub">hoặc click để chọn file</div>
+          <input type="file" id="uploadInput" accept=".pdf" multiple style="display:none"/>
+        </div>
+        <div id="uploadStatus" class="upload-status"></div>
+
+        <div id="pdfList" class="pdf-list"></div>
+
+        <button id="ingestBtn" style="margin-top:10px">Nạp toàn bộ PDF vào AI</button>
+        <pre id="ingestOutput" style="margin-top:8px">Chưa nạp dữ liệu.</pre>
+      </div>
+
+      <div class="side-card" id="systemStatusCard">
+        <h3>2. Trạng thái hệ thống</h3>
+        <button id="healthBtn" class="secondary">Kiểm tra trạng thái</button>
+        <pre id="healthOutput">Chưa kiểm tra.</pre>
+      </div>
+
+      <div class="side-card" id="knowledgeGraphCard">
+        <div class="card-header-row">
+          <h3>3. Knowledge Graph</h3>
+          <button id="loadGraphBtn" class="secondary" type="button">Tải graph</button>
+        </div>
+
+        <div class="graph-mode-row">
+          <span id="graphModeBadge" class="graph-mode-badge graph-mode-global">
+            Chưa có graph
+          </span>
+        </div>
+
+        <p id="graphStatus" class="muted">Chưa tải Knowledge Graph.</p>
+
+        <div class="graph-toolbar">
+          <input
+            id="graphSearchInput"
+            type="text"
+            placeholder="Tìm entity trong graph..."
+            class="graph-search-input"
+          />
+          <button id="graphSearchBtn" class="secondary" type="button">Tìm</button>
+          <button id="graphResetBtn" class="secondary" type="button">Reset</button>
+        </div>
+
+        <div id="graphView" class="graph-view">
+          <div class="graph-placeholder">Graph sẽ hiển thị tại đây</div>
+          <span class="graph-view-label">3D Knowledge Graph</span>
+          <span class="graph-view-hint">Kéo để xoay · Scroll để zoom · Click node</span>
+        </div>
+      </div>
+
+      <div class="side-card" id="entityDetailCard">
+        <h3>4. Chi tiết node</h3>
+        <div id="entityDetail" class="entity-detail">
+          Chọn một node trong graph để xem quan hệ và đoạn luật liên quan.
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

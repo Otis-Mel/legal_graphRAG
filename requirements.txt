@@ -1,0 +1,10 @@
+flask
+flask-cors
+python-dotenv
+neo4j
+langchain
+langchain-community
+langchain-text-splitters
+pypdf
+pymupdf
+google-generativeai
