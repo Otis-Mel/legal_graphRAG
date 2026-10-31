@@ -1,10 +1,26 @@
+# Legal GraphRAG – Vietnamese AI Legal Assistant
 
+<p align="center">
+  <strong>An AI-powered Vietnamese legal consultation and information retrieval system</strong>
+  <br/>
+  Combining GraphRAG, Hybrid Retrieval, Knowledge Graph, and Two-Tier Conversational Memory.
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3.10%2B-blue?logo=python" />
+  <img src="https://img.shields.io/badge/LLM-Google%20Gemini-4285F4?logo=google" />
+  <img src="https://img.shields.io/badge/Database-Neo4j-008CC1?logo=neo4j" />
+  <img src="https://img.shields.io/badge/Framework-Flask-black?logo=flask" />
+  <img src="https://img.shields.io/badge/RAG-GraphRAG-green" />
+</p>
+
+---
 
 ## Overview
 
 **Legal GraphRAG** is an AI-powered Vietnamese legal assistant designed to help users search, understand, and explore Vietnamese legal documents through natural language conversations.
 
-Unlike conventional vector-based RAG systems, this project combines **Hybrid Retrieval, Knowledge Graph reasoning, and conversational memory** to improve information retrieval, preserve legal context, and support more context-aware responses.
+Unlike conventional vector-based RAG systems, this project combines **Hybrid Retrieval, Knowledge Graph, and conversational memory** to improve information retrieval, preserve legal context, and generate context-aware responses.
 
 The system processes Vietnamese legal documents, extracts structured knowledge, stores document embeddings and entity relationships in Neo4j, and uses Google Gemini to generate context-grounded answers.
 
@@ -16,7 +32,7 @@ Users can also upload additional PDF documents through the web interface, allowi
 - **Hybrid Search:** Integrates semantic vector search and keyword-based retrieval.
 - **Query Expansion:** Rewrites user queries into alternative legal expressions to improve retrieval coverage.
 - **Reciprocal Rank Fusion (RRF):** Merges multiple ranked retrieval results into a unified candidate list.
-- **Knowledge Graph Extraction:** Extracts entities and relationships from Vietnamese legal documents using LLMs.
+- **Knowledge Graph Construction:** Extracts entities and relationships from Vietnamese legal documents using LLMs.
 - **Two-Tier Conversational Memory:** Maintains short-term conversation context and persistent long-term memory.
 - **Legal Document Processing:** Supports PDF extraction, scanned-document OCR, legal-aware chunking, and metadata extraction.
 - **Source-aware Responses:** Provides document, page, and legal article references to support answer traceability.
@@ -80,9 +96,9 @@ flowchart TD
 
 The ingestion pipeline transforms unstructured Vietnamese legal documents into searchable and structured knowledge.
 
-**Processing workflow:**
+**Processing Workflow:**
 
-1. PDF text extraction using PyPDF.
+1. PDF text extraction using PyPDF and PyMuPDF.
 2. Automatic detection of scanned pages.
 3. OCR processing for scanned documents using Tesseract.
 4. Text cleaning and normalization.
@@ -96,7 +112,7 @@ The ingestion pipeline transforms unstructured Vietnamese legal documents into s
 8. Entity and relationship extraction using LLMs.
 9. Storage of document chunks, embeddings, and graph relationships in Neo4j.
 
-**Chunking strategy:**
+**Chunking Strategy:**
 
 The system uses `RecursiveCharacterTextSplitter` with legal-structure-aware separators.
 
@@ -115,7 +131,7 @@ One of the main components of this project is the transformation of legal docume
 
 Instead of relying exclusively on document similarity, the system uses LLM-based information extraction to identify entities and their semantic relationships.
 
-**Entity extraction workflow:**
+**Entity Extraction Workflow:**
 
 - Extract meaningful entities from legal document chunks.
 - Identify relationships between extracted entities.
@@ -131,9 +147,7 @@ Relation: MUST_COMPLY_WITH
 Entity: Food Safety Regulations
 ```
 
-The graph represents relationships between legal concepts and allows the system to retrieve structured information beyond isolated text chunks.
-
-**Neo4j graph schema:**
+**Neo4j Graph Schema:**
 
 ```mermaid
 flowchart LR
@@ -143,11 +157,11 @@ flowchart LR
     E1 -->|"RELATES"| E2
 ```
 
+The Knowledge Graph provides structured relationships between legal concepts and supports retrieval beyond isolated text chunks.
+
 ### 3. Hybrid GraphRAG Retrieval
 
 The retrieval system combines semantic search, keyword matching, and Knowledge Graph information to improve the relevance of retrieved legal content.
-
-**Retrieval workflow:**
 
 **A. Query Expansion**
 
@@ -194,7 +208,7 @@ This structured context is passed to the LLM for answer generation.
 
 ### 4. LLM-based Answer Generation
 
-Google Gemini is used for both information extraction and natural language generation.
+Google Gemini is used for information extraction and natural language generation.
 
 The answer generation component receives:
 
@@ -295,7 +309,7 @@ The evaluator:
 3. Classifies claims as supported, unsupported, or general knowledge.
 4. Calculates an overall grounding score.
 
-**Evaluation results:**
+**Evaluation Results:**
 
 | Verdict | Result |
 |---|---:|
@@ -305,7 +319,7 @@ The evaluator:
 
 The results demonstrate that retrieval performance and answer relevance do not necessarily guarantee factual grounding.
 
-Although the retrieval and semantic relevance metrics are promising, claim-level verification reveals opportunities to improve answer grounding and reduce unsupported legal statements.
+Although retrieval and semantic relevance metrics are promising, claim-level verification reveals opportunities to improve answer grounding and reduce unsupported legal statements.
 
 The evaluation report is available in [`evaluation_report.md`](evaluation_report.md).
 
@@ -322,6 +336,8 @@ legal_graphRAG/
 │
 ├── config.py
 ├── requirements.txt
+├── .env.example
+├── .gitignore
 │
 ├── embedding.py
 ├── llm_functions.py
@@ -360,6 +376,7 @@ legal_graphRAG/
 - Neo4j Database with vector index support.
 - Google Gemini API key.
 - Git.
+- Tesseract OCR (for scanned PDF processing).
 
 ### 1. Clone the Repository
 
@@ -393,14 +410,31 @@ source venv/bin/activate
 
 ```bash
 pip install -r requirements.txt
+```
+
+If the Google Gen AI SDK is not already included in `requirements.txt`, install it using:
+
+```bash
 pip install google-genai
 ```
 
-The additional Google Gen AI SDK is required by the current implementation's `google.genai` imports.
-
 ### 4. Configure Environment Variables
 
-Create a `.env` file in the project root:
+Create a local `.env` file from the provided example:
+
+**macOS / Linux:**
+
+```bash
+cp .env.example .env
+```
+
+**Windows:**
+
+```bash
+copy .env.example .env
+```
+
+Configure your environment variables in `.env`:
 
 ```env
 GEMINI_API_KEY=your_gemini_api_key
@@ -420,7 +454,9 @@ CHUNK_SIZE=800
 CHUNK_OVERLAP=300
 ```
 
-Replace the placeholder values with your own configuration.
+Replace the placeholder values with your own API key and Neo4j credentials.
+
+**Important:** Never commit your actual `.env` file or expose API keys and database credentials publicly.
 
 ### 5. Configure Neo4j
 
@@ -432,13 +468,7 @@ The application initializes the required graph schema and vector indexes when it
 
 Place your Vietnamese legal PDF documents in the `pdfs/` directory.
 
-The document ingestion service automatically:
-
-- Detects new PDF files.
-- Skips documents that have already been ingested.
-- Extracts and processes document content.
-- Generates embeddings and Knowledge Graph triplets.
-- Stores the resulting data in Neo4j.
+The document ingestion service processes the available PDF files and stores the resulting document chunks, embeddings, and Knowledge Graph information in Neo4j.
 
 ### 7. Run the Application
 
@@ -491,7 +521,7 @@ Potential directions for further development include:
 - Optimizing retrieval and reranking strategies.
 - Expanding the evaluation dataset with more diverse questions, including out-of-domain queries.
 - Improving memory relevance and fact consistency.
-- Enhancing document processing for complex PDF layouts and scanned legal documents.
+- Enhancing document processing for complex PDF layouts and scanned documents.
 
 ---
 
@@ -510,4 +540,3 @@ Generated responses may contain inaccuracies or incomplete information. They sho
 GitHub: [@Otis-Mel](https://github.com/Otis-Mel)
 
 Project Repository: [legal_graphRAG](https://github.com/Otis-Mel/legal_graphRAG)
-
